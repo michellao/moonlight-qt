@@ -24,7 +24,9 @@ jobs:
       run: |
         echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
     - name: Install Qt
-      run: brew install qt
+      run: |
+        npm install --global create-dmg
+        brew install qt
 
     - name: Configure QMake
       run: >
@@ -32,9 +34,12 @@ jobs:
         
     - name: Build
       # Build your program with the given configuration. Note that --config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
-      run: make -j$(sysctl -n hw.logicalcpu) release
+      run: make -j$(sysctl hw.logicalcpu) release
+    - name: Create DMG
+      run: create-dmg app/Moonlight.app build/moonlight.dmg
+    
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
         path: |
-          app
+          build/moonlight.dmg
