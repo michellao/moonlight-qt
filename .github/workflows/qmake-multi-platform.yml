@@ -38,7 +38,7 @@ jobs:
     - name: Create DMG
       run: |
         mkdir -p build/release
-        create-dmg app/Moonlight.app build/release
+        create-dmg --no-code-sign app/Moonlight.app build/release
     
     - name: Upload artifact
       uses: actions/upload-artifact@v4
