@@ -18,6 +18,8 @@ jobs:
         submodules: recursive
 
     - name: Set reusable strings
+      # Turn repeated input strings (such as the build output directory) into step outputs. These step outputs can be used throughout the workflow file.
+      id: strings
       shell: bash
       run: |
         echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
@@ -26,14 +28,20 @@ jobs:
         npm install --global create-dmg
         brew install qt
 
-    - name: Configure QMake and building dmg
-      env:
-        SIGNING_IDENTITY: sansnom01@proton.me
+    - name: Configure QMake
       run: >
-        ./scripts/generate-dmg.sh Release
+        qmake6 moonlight-qt.pro QMAKE_APPLE_DEVICE_ARCHS="arm64"
+        
+    - name: Build
+      # Build your program with the given configuration. Note that --config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
+      run: make -j$(sysctl -n hw.logicalcpu) release
+    - name: Create DMG
+      run: |
+        mkdir -p build/release
+        create-dmg --no-code-sign app/Moonlight.app build/release
     
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
         path: |
-          build/installer-Release
+          build/release
